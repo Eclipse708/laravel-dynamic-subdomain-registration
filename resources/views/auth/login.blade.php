@@ -15,17 +15,17 @@
                     <div class="form-group mb-3">
                         {{-- <label for="email" class="form-label">Email</label> --}}
                         <input type="email" class="form-control" name="email" id="email" value="{{ old('email') }}" placeholder="Enter your email" required autofocus>
-                        @if ($errors->has('email'))
+                        {{-- @if ($errors->has('email'))
                             <span class="text-danger">{{ $errors->first('email') }}</span>
-                        @endif
+                        @endif --}}
                     </div>
 
                     <div class="form-group mb-3">
                         {{-- <label for="password" class="form-label">Password</label> --}}
                         <input type="password" class="form-control" name="password" id="password" placeholder="Enter your password" required>
-                        @if ($errors->has('password'))
+                        {{-- @if ($errors->has('password'))
                             <span class="text-danger">{{ $errors->first('password') }}</span>
-                        @endif
+                        @endif --}}
                     </div>
 
                     <button class="w-100 btn btn-lg btn-dark" type="submit">Login</button>

@@ -1,28 +1,18 @@
 @extends('layouts.auth-master')
 @extends('layouts.partials.navbar')
 
-<style>
- input:invalid {
-  border-color: red;
-}
-
-input:valid {
-  border-color: green;
-}
-</style>
-
 @section('content')
     <div class="container mt-5">
         <div class="row justify-content-center">
             <div class="col-md-6">
-                <form method="POST" action="{{ route('register.perform') }}" class="border p-4 shadow-sm rounded">
+                <form id="register-form" method="POST" action="{{ route('register.perform') }}" class="border p-4 shadow-sm rounded">
 
                     @csrf
 
                     <h1 class="h3 mb-3 fw-bold text-center">Register</h1>
 
                     <div class="row">
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-6">
                             <div class="form-group">
                                 {{-- <label for="first_name" class="form-label">First Name</label> --}}
                                 <input type="text" class="form-control" name="first_name" value="{{ old('first_name') }}" placeholder="First Name" required="required" autofocus>
@@ -32,7 +22,7 @@ input:valid {
                             </div>
                         </div>
 
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-6">
                             <div class="form-group">
                                 {{-- <label for="last_name" class="form-label">Last Name</label> --}}
                                 <input type="text" class="form-control" name="last_name" value="{{ old('last_name') }}" placeholder="Last Name" required="required">
@@ -49,6 +39,7 @@ input:valid {
                         @if ($errors->has('email'))
                             <span class="text-danger">{{ $errors->first('email') }}</span>
                         @endif
+                        <span id="error-confirm-email" class="text-danger"></span>
                     </div>
 
                     <div class="form-group mb-3">
@@ -65,6 +56,7 @@ input:valid {
                         @if ($errors->has('password_confirmation'))
                             <span class="text-danger">{{ $errors->first('password_confirmation') }}</span>
                         @endif
+                        <span id="error-confirm-password" class="text-danger"></span>
                     </div>
 
                     <button class="w-100 btn btn-lg btn-dark" type="submit">Register</button>
@@ -74,4 +66,103 @@ input:valid {
             </div>
         </div>
     </div>
+
+    <script>
+        const registerForm = document.getElementById('register-form');
+        const inputs = document.querySelectorAll('input');
+        const emailError = document.getElementById('error-confirm-email');
+        const passwordConfirmError = document.getElementById('error-confirm-password');
+
+        validateEmailField = () => {
+            const email = document.querySelector('input[name="email"]');
+            let pattern = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+
+            if (!email.value.match(pattern)) {
+                email.style.borderColor = '#dc3545';
+                emailError.textContent = 'Email format is incorrect';
+                return false;
+            } else {
+                emailError.textContent = '';
+                emailError.style.borderColor = '#28a745';
+            }
+        }
+
+        validatePasswordFields = () => {
+            const password = document.querySelector('input[name="password"]');
+            const confirmPassword = document.querySelector('input[name="password_confirmation"]');
+
+                if (password.value.length < 8) {
+                    password.style.borderColor = '#dc3545';
+                    confirmPassword.style.borderColor = '#dc3545';
+                    passwordConfirmError.textContent = 'Password should be at least 8 characters long';
+                    return false;
+                } else if (password.value !== confirmPassword.value) {
+                    password.style.borderColor = '#dc3545';
+                    confirmPassword.style.borderColor = '#dc3545';
+                    passwordConfirmError.textContent = 'Passwords do not match';
+                    return false;
+                }  else {
+                    passwordConfirmError.textContent = '';
+                    password.style.borderColor = '#28a745';
+                    confirmPassword.style.borderColor = '#28a745';
+                    return true;
+                }
+            }
+
+        // automatic validation
+        validatedField = (input) => {
+
+            if (!input.checkValidity()) {
+                input.style.borderColor = '#dc3545';
+            } else {
+                input.style.borderColor = '#28a745';
+            }
+
+            if (input.name === 'email') {
+                validateEmailField();
+            } else if (input.name === 'password' || input.name === 'password_confirmation') {
+                validatePasswordFields();
+            }
+        }
+
+        inputs.forEach(input => {
+            input.addEventListener('blur', () => validatedField(input));
+        });
+
+        // On submit validation
+        registerForm.addEventListener('submit', (event) => {
+            let isValid = true;
+
+            inputs.forEach(input => {
+
+                if (!input.checkValidity()) {
+                    input.style.borderColor = '#dc3545';
+                    isValid = false;
+                } else {
+                    input.style.borderColor = '#28a745';
+                    isValid = true;
+                }
+            });
+
+            const password = document.querySelector('input[name="password"]');
+            const confirmPassword = document.querySelector('input[name="password_confirmation"]');
+
+            if (password.value !== confirmPassword.value) {
+                password.style.borderColor = '#dc3545';
+                confirmPassword.style.borderColor = '#dc3545';
+                isValid = false;
+                passwordConfirmError.textContent = 'Passwords do not match';
+            } else if (password.value.length < 8) {
+                password.style.borderColor = '#dc3545';
+                confirmPassword.style.borderColor = '#dc3545';
+                isValid = false;
+                passwordConfirmError.textContent = 'Password should be at least 8 characters long';
+            }
+
+            if (!isValid) {
+                event.preventDefault();
+            }
+        });
+    </script>
+
 @endsection
