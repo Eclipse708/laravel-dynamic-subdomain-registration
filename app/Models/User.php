@@ -20,7 +20,6 @@ class User extends Authenticatable
     protected $fillable = [
         'first_name',
         'last_name',
-        'sub_domain',
         'email',
         'password',
     ];
@@ -43,4 +42,9 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public function account()
+    {
+        return $this->hasOne(Account::class);
+    }
 }

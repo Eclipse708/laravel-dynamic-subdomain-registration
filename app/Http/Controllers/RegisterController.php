@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\RegisterRequest;
+use App\Models\Account;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
@@ -28,14 +29,20 @@ class RegisterController extends Controller
 
             $initials = strtoupper(substr($validated['first_name'], 0, 1) . substr($validated['last_name'], 0, 1));
             $hash = Str::random(4);
-            $domain = $initials . $hash . '.functionalchart.com';
 
             $user = User::create([
                 'first_name' => $validated['first_name'],
                 'last_name' => $validated['last_name'],
-                'sub_domain' => $domain,
                 'email' => $validated['email'],
                 'password' => Hash::make($validated['password']),
+            ]);
+
+            $domain = $initials . $hash . $user->id . '.functionalchart.com';
+
+            $account = Account::create([
+                'user_id' => $user->id,
+                'title' => $user->email,
+                'domain' => $domain,
             ]);
 
             Auth::login($user);
