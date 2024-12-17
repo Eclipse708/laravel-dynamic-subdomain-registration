@@ -19,15 +19,35 @@ class AuthController extends Controller
 
     public function login(LoginRequest $request)
     {
-        $credentials = $request->validated();
+        try {
+            $fullDomain = request()->getHost();
+            $subDomain = explode('.', $fullDomain)[0];
+            $credentials = $request->validated();
 
-        if (Auth::attempt($credentials)) {
-            return redirect('/');
+            if (Auth::attempt($credentials)) {
+                $user_id = auth()->user()->id;
+                $user = User::where('id', $user_id)->first();
+                $userSubdomain = $user->account->domain;
+
+                if ($subDomain !== $userSubdomain) {
+                    Auth::logout();
+
+                    return back()->withErrors([
+                        'email' => 'Invalid login credentials for this domain.'
+                    ])->withInput();
+                }
+
+                return redirect('/');
+            }
+
+            throw ValidationException::withMessages([
+                'email' => 'The provided credentials are incorrect.',
+            ]);
+        } catch (\Exception $e) {
+            return response([
+                'message' => 'Internal error, please try again later'. $e->getMessage()
+            ], 400);
         }
-
-        throw ValidationException::withMessages([
-            'email' => 'The provided credentials are incorrect.',
-        ]);
     }
 
     public function logout()
